@@ -1,0 +1,30 @@
+# Backend / Maven
+target/
+!.mvn/wrapper/maven-wrapper.jar
+log/
+*.log
+logs/
+
+# IntelliJ / Eclipse
+.idea/
+*.iws
+*.iml
+*.ipr
+.classpath
+.project
+.settings/
+.vscode/
+
+# Frontend / Node
+frontend/node_modules/
+frontend/dist/
+frontend/.env.local
+frontend/.env.*.local
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS / Otros
+.DS_Store
+Thumbs.db
+apache-maven-*/
