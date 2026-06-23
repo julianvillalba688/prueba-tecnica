@@ -1,5 +1,5 @@
 import React, { useContext, useState, useEffect } from 'react';
-import { AuthContext } from '../context/AuthContext';
+import { useLoanStore } from '../store/useLoanStore';
 import { api } from '../api';
 
 const StatusIndicator = ({ status }) => {
@@ -16,7 +16,8 @@ const StatusIndicator = ({ status }) => {
 };
 
 const UserDashboard = () => {
-    const { user, logout } = useContext(AuthContext);
+    const user = useLoanStore((state) => state.user);
+    const logout = useLoanStore((state) => state.logout);
     const [amount, setAmount] = useState('');
     const [loans, setLoans] = useState([]);
 

@@ -1,33 +1,25 @@
-import React, { useContext } from 'react';
-import { AuthProvider, AuthContext } from './context/AuthContext';
+import React from 'react';
+import { useLoanStore } from './store/useLoanStore';
 import Login from './components/Login';
 import UserDashboard from './components/UserDashboard';
 import AdminDashboard from './components/AdminDashboard';
 
-const AppContent = () => {
-    const { user, role } = useContext(AuthContext);
+const App = () => {
+    const user = useLoanStore((state) => state.user);
 
     if (!user) {
         return <Login />;
     }
 
-    if (role === 'ADMIN') {
+    if (user.role === 'ADMIN') {
         return <AdminDashboard />;
     }
 
-    if (role === 'USER') {
+    if (user.role === 'USER') {
         return <UserDashboard />;
     }
 
     return <Login />;
-};
-
-const App = () => {
-    return (
-        <AuthProvider>
-            <AppContent />
-        </AuthProvider>
-    );
 };
 
 export default App;

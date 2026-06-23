@@ -1,8 +1,8 @@
-import React, { useState, useContext } from 'react';
-import { AuthContext } from '../context/AuthContext';
+import React, { useState } from 'react';
+import { useLoanStore } from '../store/useLoanStore';
 
 const Login = () => {
-    const { login } = useContext(AuthContext);
+    const login = useLoanStore((state) => state.login);
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
