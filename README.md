@@ -108,7 +108,7 @@ La aplicación cuenta con seguridad `Basic Auth` y persistencia de sesión por `
 ## 📐 Diseño UI/UX
 La interfaz de usuario ha sido concebida bajo una línea estética utilitaria de alto contraste, minimalista y de alta densidad de información (inspirada en consolas de desarrollo como Vercel y Linear).
 
-## 🔥 Arquitectura Avanzada (100/100)
+## 🔥 Arquitectura Avanzada
 Para garantizar estándares estrictos de producción, este sistema implementa una separación clara:
 
 ### ⚙️ Backend (Capa de Datos y Negocio)
