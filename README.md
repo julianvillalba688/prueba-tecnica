@@ -54,4 +54,4 @@ La aplicación cuenta con seguridad `Basic Auth` y persistencia de sesión por `
 | **Usuario** | `usuario@test.com` | `123` | Solicitar nuevos préstamos, ver historial propio. |
 
 ## 📐 Diseño UI/UX
-Se refactorizó la interfaz original para presentar una estética utilitaria, minimalista y de alto contraste (estilo Vercel/Linear). Las tarjetas flotantes se reemplazaron por consolas de datos tabulares, optimizando el espacio y ofreciendo una experiencia centrada en el dato.
+La interfaz de usuario ha sido concebida bajo una línea estética utilitaria de alto contraste, minimalista y de alta densidad de información (inspirada en consolas de desarrollo como Vercel y Linear).
