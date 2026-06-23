@@ -7,9 +7,10 @@ import com.bank.loans.ports.output.LoanRepositoryPort;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Component;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
 
-import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Component
@@ -23,37 +24,43 @@ public class JpaLoanRepositoryAdapter implements LoanRepositoryPort {
 
     @Override
     @CacheEvict(value = {"loansByUser", "allLoans"}, allEntries = true)
-    public Loan save(Loan loan) {
-        LoanEntity entity = new LoanEntity(
-                loan.getId(),
-                loan.getUserEmail(),
-                loan.getAmount(),
-                loan.getTermMonths(),
-                loan.getStatus()
-        );
-        LoanEntity saved = repository.save(entity);
-        return toDomain(saved);
+    public Mono<Loan> save(Loan loan) {
+        return Mono.fromCallable(() -> {
+            LoanEntity entity = new LoanEntity(
+                    loan.getId(),
+                    loan.getUserEmail(),
+                    loan.getAmount(),
+                    loan.getTermMonths(),
+                    loan.getStatus()
+            );
+            return toDomain(repository.save(entity));
+        }).subscribeOn(Schedulers.boundedElastic());
     }
 
     @Override
-    public Optional<Loan> findById(String id) {
-        return repository.findById(id).map(this::toDomain);
+    public Mono<Loan> findById(String id) {
+        return Mono.fromCallable(() -> repository.findById(id).map(this::toDomain).orElse(null))
+                .subscribeOn(Schedulers.boundedElastic());
     }
 
     @Override
     @Cacheable(value = "loansByUser", key = "#email")
-    public List<Loan> findByUserEmail(String email) {
-        return repository.findByUserEmail(email).stream()
+    public Flux<Loan> findByUserEmail(String email) {
+        return Mono.fromCallable(() -> repository.findByUserEmail(email).stream()
                 .map(this::toDomain)
-                .collect(Collectors.toList());
+                .collect(Collectors.toList()))
+                .subscribeOn(Schedulers.boundedElastic())
+                .flatMapMany(Flux::fromIterable);
     }
 
     @Override
     @Cacheable(value = "allLoans")
-    public List<Loan> findAll() {
-        return repository.findAll().stream()
+    public Flux<Loan> findAll() {
+        return Mono.fromCallable(() -> repository.findAll().stream()
                 .map(this::toDomain)
-                .collect(Collectors.toList());
+                .collect(Collectors.toList()))
+                .subscribeOn(Schedulers.boundedElastic())
+                .flatMapMany(Flux::fromIterable);
     }
 
     private Loan toDomain(LoanEntity entity) {

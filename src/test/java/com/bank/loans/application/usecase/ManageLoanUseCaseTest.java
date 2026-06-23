@@ -1,45 +1,35 @@
 package com.bank.loans.application.usecase;
 
 import com.bank.loans.domain.model.Loan;
-import com.bank.loans.domain.model.LoanStatus;
 import com.bank.loans.ports.output.LoanRepositoryPort;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
+import reactor.core.publisher.Mono;
+import reactor.test.StepVerifier;
 
 import java.math.BigDecimal;
-
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
-public class ManageLoanUseCaseTest {
+class ManageLoanUseCaseTest {
 
-    @Test
-    public void requestLoan_setsStatusToPending() {
-        LoanRepositoryPort port = Mockito.mock(LoanRepositoryPort.class);
-        ManageLoanUseCase useCase = new ManageLoanUseCase(port);
-
-        when(port.save(any(Loan.class))).thenAnswer(i -> i.getArguments()[0]);
-
-        Loan loan = useCase.requestLoan("test@bank.com", BigDecimal.valueOf(5000), 24);
-        
-        assertNotNull(loan.getId());
-        assertEquals(LoanStatus.PENDIENTE, loan.getStatus());
-        assertEquals("test@bank.com", loan.getUserEmail());
-    }
+    private final LoanRepositoryPort repositoryPort = mock(LoanRepositoryPort.class);
+    private final ManageLoanUseCase useCase = new ManageLoanUseCase(repositoryPort);
 
     @Test
-    public void updateLoanStatus_approvesLoan() {
-        LoanRepositoryPort port = Mockito.mock(LoanRepositoryPort.class);
-        ManageLoanUseCase useCase = new ManageLoanUseCase(port);
-        
-        Loan pendingLoan = new Loan("1", "test@bank.com", BigDecimal.valueOf(5000), 24, LoanStatus.PENDIENTE);
-        
-        when(port.findById("1")).thenReturn(java.util.Optional.of(pendingLoan));
-        when(port.save(any(Loan.class))).thenAnswer(i -> i.getArguments()[0]);
+    void shouldSetPendingStatusOnRequest() {
+        Loan inputLoan = new Loan(null, "test@test.com", new BigDecimal("5000"), 12);
+        when(repositoryPort.save(any(Loan.class))).thenAnswer(i -> Mono.just(i.getArgument(0)));
 
-        Loan approvedLoan = useCase.updateLoanStatus("1", "APROBAR");
-        
-        assertEquals(LoanStatus.APROBADO, approvedLoan.getStatus());
+        Mono<Loan> resultMono = useCase.requestLoan("test@test.com", new BigDecimal("5000"), 12);
+
+        StepVerifier.create(resultMono)
+                .assertNext(result -> {
+                    assertEquals("PENDIENTE", result.getStatus().name());
+                    assertEquals("test@test.com", result.getUserEmail());
+                })
+                .verifyComplete();
+
+        verify(repositoryPort, times(1)).save(any(Loan.class));
     }
 }

@@ -12,7 +12,6 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-import reactor.core.scheduler.Schedulers;
 
 @RestController
 @RequestMapping("/api/loans")
@@ -29,34 +28,26 @@ public class LoanController {
     @PostMapping("/request")
     public Mono<ResponseEntity<Loan>> requestLoan(@jakarta.validation.Valid @RequestBody LoanRequestDto request,
                                                   @AuthenticationPrincipal UserDetails userDetails) {
-        return Mono.fromCallable(() -> {
-            Loan loan = manageLoanUseCase.requestLoan(userDetails.getUsername(), request.getAmount(), request.getTermMonths());
-            return ResponseEntity.ok(loan);
-        }).subscribeOn(Schedulers.boundedElastic());
+        return manageLoanUseCase.requestLoan(userDetails.getUsername(), request.getAmount(), request.getTermMonths())
+                .map(ResponseEntity::ok);
     }
 
     @GetMapping("/my-loans")
     public Flux<Loan> getMyLoans(@AuthenticationPrincipal UserDetails userDetails) {
-        return Mono.fromCallable(() -> loanRepositoryPort.findByUserEmail(userDetails.getUsername()))
-                   .subscribeOn(Schedulers.boundedElastic())
-                   .flatMapMany(Flux::fromIterable);
+        return loanRepositoryPort.findByUserEmail(userDetails.getUsername());
     }
 
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/all")
     public Flux<Loan> getAllLoans() {
-        return Mono.fromCallable(loanRepositoryPort::findAll)
-                   .subscribeOn(Schedulers.boundedElastic())
-                   .flatMapMany(Flux::fromIterable);
+        return loanRepositoryPort.findAll();
     }
 
     @PreAuthorize("hasRole('ADMIN')")
     @PatchMapping("/{id}/status")
     public Mono<ResponseEntity<Loan>> updateStatus(@PathVariable String id,
                                                    @jakarta.validation.Valid @RequestBody StatusUpdateRequestDto request) {
-        return Mono.fromCallable(() -> {
-            Loan loan = manageLoanUseCase.updateLoanStatus(id, request.getAction());
-            return ResponseEntity.ok(loan);
-        }).subscribeOn(Schedulers.boundedElastic());
+        return manageLoanUseCase.updateLoanStatus(id, request.getAction())
+                .map(ResponseEntity::ok);
     }
 }
